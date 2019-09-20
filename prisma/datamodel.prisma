@@ -9,4 +9,16 @@ type Link {
   createdAt: DateTime! @createdAt
   description: String!
   url: String!
+  postedBy: User
+}
+
+# 新增 postedBy 欄位指向 User
+
+# Adding a User model in database
+type User {
+  id: ID! @id
+  name: String!
+  email: String! @unique
+  password: String!
+  links: [Link!]!
 }
