@@ -1,47 +1,26 @@
 const { GraphQLServer } = require('graphql-yoga');
 const { prisma } = require('./generated/prisma-client');
 
-async function main(){
-    const newLink = await prisma.createLink({
-        url:'www.prisma.io',
-        description:"Prisma replaces traditional ORMs"
-    })
-    console.log(`Created new link: ${newLink.url} (ID: ${newLink.id})`);
-
-    const allLinks = await prisma.links();
-    console.log(allLinks)
-}
-
-main().catch(e => console.error(e))
-
-// 資料來源
-let links = [{
-    id:'link-0',
-    url:'www.howtographql.com',
-    description:'Fullstack tutorial for GraphQL'
-}]
-
-let idCount = links.length;
-
 // resolvers 資料取得的實做
 const resolvers = {
     // 查詢資料
     Query:{
         info: () =>　`this is API of a Hackernews Clone`,
-        // 讀取數據 資料
-        feed: () =>　links
+        // GraphQLServer 上附加 prisma 才能調用 prisma  
+        feed: (root, args, context, info) => {
+            // 調用 context prisma links 方法 返回資料
+            return context.prisma.links()
+        }
     },
     // 資料變動
     Mutation:{
         // 新增
-        post: (parent, args) => {
-            const link = {
-                id: `link-${idCount++}`,
-                description: args.description,
-                url: args.url
-            }
-            links.push(link);
-            return link;
+        post: (root, args, context) =>{
+            // 調用 context prisma createLink 方法 新增並返回資料
+            return context.prisma.createLink({
+                url: args.url,
+                description: args.description
+            })
         },
         // 修改
         updateLink: (parent, args) => {
@@ -69,7 +48,9 @@ const resolvers = {
 const server = new GraphQLServer({
     // schema 定義 api
     typeDefs:'./src/schema.graphql',
-    resolvers
+    resolvers,
+    // prisma 附加到 context
+    context: { prisma }
 })
 
 server.start(() => console.log(`server is running in localhost 4000`));
