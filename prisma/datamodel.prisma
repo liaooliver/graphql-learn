@@ -1,0 +1,12 @@
+# Because Prisma uses GraphQL SDL for model definitions, you can basically copy the existing Link definition from schema.graphql into datamodel.prisma.
+
+# here are two main differences compared to the previous Link version from schema.graphql.
+# First, you’re adding the @id directive to the id: ID! field. This means Prisma will auto-generate and store globally unique IDs for the Link records in the database on the id field.
+# Second, you’re adding a new field called createdAt: DateTime! @createdAt. Thanks to the @createdAt directive, this field is also managed by Prisma and will be read-only in the API. It stores the time for when a specific Link was created. You can also annotate a field with the @updatedAt directive to track when a record was last updated.
+
+type Link {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  description: String!
+  url: String!
+}

@@ -1,6 +1,20 @@
 const { GraphQLServer } = require('graphql-yoga');
+const { prisma } = require('./generated/prisma-client');
 
-// 儲存資料
+async function main(){
+    const newLink = await prisma.createLink({
+        url:'www.prisma.io',
+        description:"Prisma replaces traditional ORMs"
+    })
+    console.log(`Created new link: ${newLink.url} (ID: ${newLink.id})`);
+
+    const allLinks = await prisma.links();
+    console.log(allLinks)
+}
+
+main().catch(e => console.error(e))
+
+// 資料來源
 let links = [{
     id:'link-0',
     url:'www.howtographql.com',
