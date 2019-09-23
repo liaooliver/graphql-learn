@@ -2,7 +2,7 @@ type Query{
     feed: [Link!]!
 }
 
-# add signup & login 
+# defined signup & login 
 
 type Mutation{
     post(url: String!, description: String!): Link!
@@ -29,3 +29,4 @@ type User {
   email: String!
   links: [Link!]!
 }
+

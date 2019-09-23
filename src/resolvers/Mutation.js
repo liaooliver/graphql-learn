@@ -2,7 +2,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { APP_SECRET, getUserId } = require('../utils');
 
-async function post(root, args, context){
+// 撰寫各項 API 的解析器
+
+function post(root, args, context){
     const userId = getUserId(context)
     return context.prisma.createLink({
         url: args.url,
@@ -20,15 +22,14 @@ async function signup(parent, args, context, info){
 
     // store new USER 
     const user = await context.prisma.createUser({...args, password})
-    console.log(user)
+    
     // 產生 token
+    // {userID} 狀態資料
+    // APP_SECRET 簽署金鑰
     const token = jwt.sign({userId: user.id}, APP_SECRET)
 
     // return authpayload
-    return {
-        token,
-        user
-    }
+    return { token, user }
 }
 
 async function login(parent, args, context, info){
