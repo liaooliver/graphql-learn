@@ -9,7 +9,7 @@ function post(root, args, context){
     return context.prisma.createLink({
         url: args.url,
         description: args.description,
-        postedBy:{ connect: { id: userId } }
+        // postedBy:{ connect: { id: userId } }
     })
     // 調用 context prisma createLink 方法 新增並返回資料
 }
