@@ -18,7 +18,7 @@ const resolvers = {
 
 const server = new GraphQLServer({
     // schema 定義 api
-    typeDefs:'./src/schema.graphql',
+    typeDefs:'./schema.graphql',
     resolvers,
     // prisma 附加到 context
     context: request => {
