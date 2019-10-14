@@ -1,28 +1,23 @@
 const { ApolloServer } = require('apollo-server');
 
-var todolists = [
-    {   
-        id:1,
-        item:'learn GraphQL',
-        created:'2019/10/01',
-        remark:'so easy',
-        isFinished:false
-    }
-]
+var todolists = []
 
 const typeDefs = `
     type Query {
         totalItems: Int!
-        totalLists: [Lists!]!
+        totalLists(date: String): [Lists!]!
     }
 
     type Mutation{
         addItem(item:String! remark:String):Lists!
+        deleteItem(id: ID!): [Lists!]!
+        updateItem(id: ID! item:String! remark:String):Lists!
     }
 
     type Lists{
         id: ID!
         item: String!
+        updated: String!
         created: String!
         remark: String
         isFinished: Boolean!
@@ -41,15 +36,34 @@ const resolvers = {
         addItem: (parent, args) => {
             console.log('args', args)
             let newItem = {
-                id: todolists.length+1,
+                id: new Date().getTime(),
                 item: args.item,
-                created: new Date().toLocaleDateString(),
+                updated: new Date().toLocaleString(),
+                created: new Date().toLocaleString(),
                 remark: args.remark ? args.remark :  "",
                 isFinished: false
             }
             todolists = [...todolists, newItem]
             console.log(todolists)
             return newItem
+        },
+        deleteItem: (parent, args) => {
+            let index = todolists.map((list)=> list.id).indexOf(parseInt(args.id));
+            console.log(index)
+            todolists.splice(index, 1);
+            return todolists
+        },
+        updateItem: (parent, args) => {
+            let index = todolists.map((list) => list.id).indexOf(parseInt(args.id));
+            todolists.forEach(list => {
+                if(list.id == args.id){
+                    list.item = args.item;
+                    list.remark = args.remark ? args.remark : "";
+                    list.updated = new Date().toLocaleString();
+                }
+            })
+            console.log(todolists[index])
+            return todolists[index]
         }
     }
 }
