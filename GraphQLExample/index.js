@@ -1,11 +1,37 @@
 const { ApolloServer } = require('apollo-server');
 
-var todolists = []
+var users = ["KV","Apple"]
+var todolists = [{
+    id: 1,
+    owner: "KV",
+    item: "我是 KV 的 Item1",
+    updated: new Date(),
+    created: new Date(),
+    remark: "",
+    isFinished: false
+}, {
+    id: 2,
+    owner: "Apple",
+    item: "我是 Apple 的 Item1",
+    updated: new Date(),
+    created: new Date(),
+    remark: "",
+    isFinished: false
+}, {
+    id: 3,
+    owner: "KV",
+        item: "我是 KV 的 Item2",
+    updated: new Date(),
+    created: new Date(),
+    remark: "",
+    isFinished: false
+}]
 
 const typeDefs = `
     type Query {
         totalItems: Int!
         totalLists(date: String): [Lists!]!
+        owner:Owner
     }
 
     type Mutation{
@@ -16,54 +42,61 @@ const typeDefs = `
 
     type Lists{
         id: ID!
+        owner: String!
         item: String!
         updated: String!
         created: String!
         remark: String
         isFinished: Boolean!
     }
+
+    type Owner{
+        name: String!
+        jobs: [Lists]
+    }
 `
 
 const resolvers = {
-    Query:{
+    Query: {
+        owner: (parent) => {
+            console.log("parent", parent)
+            return { name: users[0] }
+        },
         totalItems: () => todolists.length,
         totalLists: (parent, args) => {
-            console.log('args',args)
             return args.date ? todolists.filter(list => list.created === args.date) : todolists;
         }
     },
-    Mutation:{
-        addItem: (parent, args) => {
-            console.log('args', args)
+    Mutation: {
+        addItem: (parent, args, context) => {
             let newItem = {
                 id: new Date().getTime(),
                 item: args.item,
                 updated: new Date().toLocaleString(),
                 created: new Date().toLocaleString(),
-                remark: args.remark ? args.remark :  "",
+                remark: args.remark ? args.remark : "",
                 isFinished: false
             }
             todolists = [...todolists, newItem]
-            console.log(todolists)
             return newItem
         },
         deleteItem: (parent, args) => {
-            let index = todolists.map((list)=> list.id).indexOf(parseInt(args.id));
-            console.log(index)
+            let index = todolists.map((list) => list.id).indexOf(parseInt(args.id));
             todolists.splice(index, 1);
             return todolists
         },
         updateItem: (parent, args) => {
             let index = todolists.map((list) => list.id).indexOf(parseInt(args.id));
-            todolists.forEach(list => {
-                if(list.id == args.id){
-                    list.item = args.item;
-                    list.remark = args.remark ? args.remark : "";
-                    list.updated = new Date().toLocaleString();
-                }
-            })
-            console.log(todolists[index])
+            todolists[index].item = args.item;
+            todolists[index].remark = args.remark ? args.remark : "";
+            todolists[index].updated = new Date().toLocaleString();
             return todolists[index]
+        }
+    },
+    Owner: {
+        jobs: (parent, args) => {
+            console.log(parent)
+            return todolists.filter(todo => todo.owner == parent.name);
         }
     }
 }
@@ -71,6 +104,6 @@ const resolvers = {
 const server = new ApolloServer({
     typeDefs,
     resolvers
-});
+})
 
 server.listen().then(({ url }) => console.log(`GraphQL service Running on ${url}`))
