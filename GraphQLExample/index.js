@@ -1,37 +1,13 @@
 const { ApolloServer } = require('apollo-server');
 
-var users = ["KV","Apple"]
-var todolists = [{
-    id: 1,
-    owner: "KV",
-    item: "我是 KV 的 Item1",
-    updated: new Date(),
-    created: new Date(),
-    remark: "",
-    isFinished: false
-}, {
-    id: 2,
-    owner: "Apple",
-    item: "我是 Apple 的 Item1",
-    updated: new Date(),
-    created: new Date(),
-    remark: "",
-    isFinished: false
-}, {
-    id: 3,
-    owner: "KV",
-        item: "我是 KV 的 Item2",
-    updated: new Date(),
-    created: new Date(),
-    remark: "",
-    isFinished: false
-}]
+var todolists = []
 
 const typeDefs = `
+    scalar DateTime
+
     type Query {
         totalItems: Int!
         totalLists(date: String): [Lists!]!
-        owner:Owner
     }
 
     type Mutation{
@@ -42,26 +18,16 @@ const typeDefs = `
 
     type Lists{
         id: ID!
-        owner: String!
         item: String!
         updated: String!
         created: String!
         remark: String
         isFinished: Boolean!
     }
-
-    type Owner{
-        name: String!
-        jobs: [Lists]
-    }
 `
 
 const resolvers = {
     Query: {
-        owner: (parent) => {
-            console.log("parent", parent)
-            return { name: users[0] }
-        },
         totalItems: () => todolists.length,
         totalLists: (parent, args) => {
             return args.date ? todolists.filter(list => list.created === args.date) : todolists;
@@ -93,12 +59,17 @@ const resolvers = {
             return todolists[index]
         }
     },
-    Owner: {
-        jobs: (parent, args) => {
-            console.log(parent)
-            return todolists.filter(todo => todo.owner == parent.name);
-        }
-    }
+    // 使用 GraphQLScalarType 物件建立自訂純量的解析函式
+    DateTime: new GraphQLScalarType({
+        name: 'DateTime',
+        description: 'A valid date time value.',
+        // 把欄位查詢到的資料，回傳到 parseValue 函式上，轉換成預期的格式
+        parseValue: value => new Date(value).toLocaleString(),
+        // 把查詢變數上的資料，回傳到 serialize 函式上，轉換成預期的格式
+        serialize: value => new Date(value).toLocaleString(),
+        // 把
+        parseLiteral: ast => new Date(value).toLocaleString()
+    })
 }
 
 const server = new ApolloServer({
